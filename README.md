@@ -28,12 +28,14 @@ make run3
 
 ## Mocking 전략
 
-실제 백엔드가 없으므로 각 과제에서 자체 `fetch` interceptor 기반 mock API를 사용했습니다. 네트워크 요청에 가까운 형태로 `fetch`를 호출하며, mock 레이어에서 지연, 실패, 취소, 세션 조회, 청크 업로드 응답을 시뮬레이션합니다.
+실제 백엔드가 없으므로 MSW(Mock Service Worker)를 사용해 API를 mocking했습니다. 각 과제의 `src/mockApi.ts`는 MSW handler만 정의하고, 공통 worker 시작 로직은 `shared/mock/browser.ts`에서 관리합니다.
+
+MSW handler에서는 지연, 실패, 세션 조회, 청크 업로드 응답을 시뮬레이션합니다.
 
 ## 사용 도구
 
 - React
 - TypeScript
 - Vite
+- MSW
 - AI 코딩 도구: ChatGPT/Codex
-

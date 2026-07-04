@@ -7,7 +7,7 @@
 ## 기술적 선택
 
 - React state와 `useEffect` 기반 큐 워커를 사용했습니다.
-- 실제 API 서버 대신 `fetch` interceptor mock API를 구현했습니다.
+- 실제 API 서버 대신 MSW handler로 mock API를 구현했습니다.
 - `AbortController`로 업로드 중 취소를 처리했습니다.
 - mock API에서 지연과 확률적 실패를 넣어 실패/재시도 플로우를 확인할 수 있게 했습니다.
 
@@ -15,7 +15,8 @@
 
 - `src/main.tsx`: 앱 진입점
 - `src/App.tsx`: 업로드 큐 상태와 UI
-- `src/mockApi.ts`: `/api/uploads` 요청을 가로채는 mock API
+- `src/mockApi.ts`: `/api/uploads` 요청을 처리하는 MSW handler
+- `../shared/mock/browser.ts`: MSW worker 공통 시작 로직
 - `src/styles.css`: 과제 UI 스타일
 
 ## 개선하고 싶은 부분
@@ -29,6 +30,7 @@
 - React
 - TypeScript
 - Vite
+- MSW
 - AI 코딩 도구: ChatGPT/Codex
 
 ## 실행 방법
@@ -37,4 +39,3 @@
 make install
 make run1
 ```
-

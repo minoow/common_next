@@ -1,3 +1,5 @@
+import { delay, http, HttpResponse } from 'msw';
+
 export type FileNode = {
   id: string;
   parentId: string | null;
@@ -7,7 +9,6 @@ export type FileNode = {
   updatedAt: string;
 };
 
-const originalFetch = window.fetch.bind(window);
 const extensions = ['pdf', 'mov', 'zip', 'tsx', 'png', 'csv', 'pptx', 'mp4'];
 
 function createFiles(): FileNode[] {
@@ -42,15 +43,9 @@ function createFiles(): FileNode[] {
 
 const files = createFiles();
 
-export function installMockApi() {
-  window.fetch = async (input, init) => {
-    const url = input instanceof Request ? input.url : String(input);
-
-    if (url.endsWith('/api/files') && (!init?.method || init.method === 'GET')) {
-      await new Promise((resolve) => window.setTimeout(resolve, 260));
-      return Response.json({ files });
-    }
-
-    return originalFetch(input, init);
-  };
-}
+export const handlers = [
+  http.get('/api/files', async () => {
+    await delay(260);
+    return HttpResponse.json({ files });
+  })
+];
