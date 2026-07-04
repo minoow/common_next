@@ -34,20 +34,6 @@ test.describe('MSW mock API', () => {
     );
   });
 
-  test('과제2 파일 목록 API가 5,000개 이상 데이터를 반환한다', async ({ page }) => {
-    await gotoWithActiveMsw(page, 'http://127.0.0.1:5174');
-
-    const result = await page.evaluate(async () => {
-      const response = await fetch('/api/files');
-      const data = await response.json();
-      return { status: response.status, count: data.files.length, first: data.files[0] };
-    });
-
-    expect(result.status).toBe(200);
-    expect(result.count).toBeGreaterThanOrEqual(5000);
-    expect(result.first).toEqual(expect.objectContaining({ id: expect.any(String), name: expect.any(String) }));
-  });
-
   test('과제3 청크 업로드 세션 API가 세션을 생성하고 재조회한다', async ({ page }) => {
     await gotoWithActiveMsw(page, 'http://127.0.0.1:5175');
 

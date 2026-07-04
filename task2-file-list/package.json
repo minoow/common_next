@@ -8,17 +8,12 @@
     "@vitejs/plugin-react": "^4.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-window": "^2.2.7",
     "typescript": "^5.7.2",
     "vite": "^6.0.7"
   },
   "devDependencies": {
     "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
-    "msw": "^2.14.6"
-  },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
+    "@types/react-dom": "^19.0.2"
   }
 }

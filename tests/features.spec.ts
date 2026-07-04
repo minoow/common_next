@@ -24,18 +24,34 @@ test.describe('과제 기능 플로우', () => {
     await expect(page.getByRole('button', { name: '전체 취소' })).toBeVisible();
   });
 
-  test('과제2: 5,000개 이상 목록을 렌더링하고 검색/스크롤이 동작한다', async ({ page }) => {
+  test('과제2: 10,000개 목록, 검색, 선택, 트리/그리드 전환이 동작한다', async ({ page }) => {
     await page.goto('http://127.0.0.1:5174');
 
     await expect(page.getByText('전체 데이터')).toBeVisible();
-    await expect(page.getByText('5,220개')).toBeVisible();
-    await expect(page.getByText('Project 01')).toBeVisible();
+    await expect(page.getByText('18,380개')).toBeVisible();
+    await expect(page.getByText('표시 10,000개')).toBeVisible();
 
-    await page.getByPlaceholder('파일명 검색').fill('asset-1-001');
-    await expect(page.getByText('asset-1-001.pdf')).toBeVisible();
+    await page.getByPlaceholder('파일명 검색').fill('visual-bulk-00001');
+    await expect(page.getByText('visual-bulk-00001.png')).toBeVisible();
+    await expect(page.locator('mark')).toBeVisible();
 
     const renderedRows = await page.locator('.row').count();
-    expect(renderedRows).toBeLessThan(60);
+    expect(renderedRows).toBeLessThan(80);
+
+    await page.getByPlaceholder('파일명 검색').fill('');
+    await page.locator('select').first().selectOption('image');
+    await expect(page.getByText('표시 1,667개')).toBeVisible();
+
+    await page.locator('.row').first().click();
+    await expect(page.getByText(/선택 1개/)).toBeVisible();
+    await page.locator('.row').nth(2).click({ modifiers: ['Shift'] });
+    await expect(page.getByText(/선택 3개/)).toBeVisible();
+
+    await page.getByRole('button', { name: '트리' }).click();
+    await expect(page.locator('.row').filter({ hasText: 'Bulk Workspace' })).toBeVisible();
+
+    await page.getByRole('button', { name: '그리드' }).click();
+    await expect(page.locator('.card').first()).toBeVisible();
   });
 
   test('과제3: 파일 선택 후 청크 업로드를 완료한다', async ({ page }) => {
