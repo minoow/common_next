@@ -41,23 +41,30 @@ test.describe('MSW mock API', () => {
       const payload = {
         fileKey: `playwright-${Date.now()}`,
         fileName: 'playwright.bin',
-        fileSize: 2048,
-        chunkSize: 1024,
+        fileSize: 10 * 1024 * 1024,
+        chunkSize: 5 * 1024 * 1024,
         totalChunks: 2
       };
-      const createResponse = await fetch('/api/chunk-upload/session', {
+      const createResponse = await fetch('/api/upload/init', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const created = await createResponse.json();
-      const readResponse = await fetch(`/api/chunk-upload/session/${created.id}`);
+      const formData = new FormData();
+      formData.append('uploadId', created.uploadId);
+      formData.append('chunkIndex', '0');
+      formData.append('chunkSize', String(payload.chunkSize));
+      formData.append('chunk', new File([new ArrayBuffer(payload.chunkSize)], 'chunk.bin'));
+      const chunkResponse = await fetch('/api/upload/chunk', { method: 'POST', body: formData });
+      const readResponse = await fetch(`/api/upload/status/${created.uploadId}`);
       const read = await readResponse.json();
-      return { createStatus: createResponse.status, readStatus: readResponse.status, created, read };
+      return { createStatus: createResponse.status, chunkStatus: chunkResponse.status, readStatus: readResponse.status, created, read };
     });
 
     expect(result.createStatus).toBe(200);
+    expect([200, 503]).toContain(result.chunkStatus);
     expect(result.readStatus).toBe(200);
-    expect(result.read).toEqual(expect.objectContaining({ id: result.created.id, totalChunks: 2, completed: [] }));
+    expect(result.read).toEqual(expect.objectContaining({ uploadId: result.created.uploadId, totalChunks: 2 }));
   });
 });

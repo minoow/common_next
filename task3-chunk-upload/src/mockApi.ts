@@ -1,92 +1,128 @@
 import { delay, http, HttpResponse } from 'msw';
 
-type ServerSession = {
-  id: string;
+type UploadStatus = 'initialized' | 'uploading' | 'completed';
+
+type StoredUpload = {
+  uploadId: string;
   fileKey: string;
   fileName: string;
   fileSize: number;
   chunkSize: number;
   totalChunks: number;
-  completed: number[];
-  status: 'active' | 'completed';
+  uploadedChunks: Record<string, { uploaded: true; timestamp: number; size: number }>;
+  status: UploadStatus;
+  completedAt?: string;
 };
 
-const storageKey = 'task3.mock.sessions';
+const indexKey = 'task3.mock.upload.index';
 
-function readSessions(): ServerSession[] {
-  return JSON.parse(localStorage.getItem(storageKey) ?? '[]') as ServerSession[];
+function uploadKey(uploadId: string) {
+  return `upload_${uploadId}`;
 }
 
-function writeSessions(sessions: ServerSession[]) {
-  localStorage.setItem(storageKey, JSON.stringify(sessions));
+function readIndex(): Record<string, string> {
+  return JSON.parse(localStorage.getItem(indexKey) ?? '{}') as Record<string, string>;
+}
+
+function writeIndex(index: Record<string, string>) {
+  localStorage.setItem(indexKey, JSON.stringify(index));
+}
+
+function readUpload(uploadId: string): StoredUpload | null {
+  const raw = localStorage.getItem(uploadKey(uploadId));
+  return raw ? (JSON.parse(raw) as StoredUpload) : null;
+}
+
+function writeUpload(upload: StoredUpload) {
+  localStorage.setItem(uploadKey(upload.uploadId), JSON.stringify(upload));
+  const index = readIndex();
+  index[upload.fileKey] = upload.uploadId;
+  writeIndex(index);
 }
 
 export const handlers = [
-  http.post('/api/chunk-upload/session', async ({ request }) => {
-    const payload = (await request.json()) as Omit<ServerSession, 'id' | 'completed' | 'status'>;
-    const sessions = readSessions();
-    const existing = sessions.find((session) => session.fileKey === payload.fileKey && session.status === 'active');
+  http.post('/api/upload/init', async ({ request }) => {
+    const payload = (await request.json()) as {
+      fileKey: string;
+      fileName: string;
+      fileSize: number;
+      chunkSize: number;
+      totalChunks: number;
+    };
+    const existingId = readIndex()[payload.fileKey];
+    const existing = existingId ? readUpload(existingId) : null;
 
     if (existing) {
       return HttpResponse.json(existing);
     }
 
-    const session: ServerSession = {
+    const upload: StoredUpload = {
+      uploadId: crypto.randomUUID(),
       ...payload,
-      id: crypto.randomUUID(),
-      completed: [],
-      status: 'active'
+      uploadedChunks: {},
+      status: 'initialized'
     };
-    writeSessions([...sessions, session]);
-    return HttpResponse.json(session);
+    writeUpload(upload);
+    return HttpResponse.json(upload);
   }),
 
-  http.get('/api/chunk-upload/session/:sessionId', ({ params }) => {
-    const id = String(params.sessionId);
-    const session = readSessions().find((item) => item.id === id);
-    return session ? HttpResponse.json(session) : HttpResponse.json({ message: '세션을 찾을 수 없습니다.' }, { status: 404 });
-  }),
+  http.post('/api/upload/chunk', async ({ request }) => {
+    const formData = await request.formData();
+    const uploadId = String(formData.get('uploadId') ?? '');
+    const chunkIndex = String(formData.get('chunkIndex') ?? '');
+    const chunkSize = Number(formData.get('chunkSize') ?? 0);
+    const upload = readUpload(uploadId);
 
-  http.put('/api/chunk-upload/session/:sessionId/chunk', async ({ params, request }) => {
-    await delay(180 + Math.random() * 420);
-    if (Math.random() < 0.12) {
+    if (!upload) {
+      return HttpResponse.json({ message: '업로드 상태를 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    await delay(100 + Math.random() * 400);
+
+    if (Math.random() < 0.15) {
       return HttpResponse.json({ message: '청크 업로드 중 네트워크 오류가 발생했습니다.' }, { status: 503 });
     }
 
-    const requestUrl = new URL(request.url);
-    const sessionId = String(params.sessionId);
-    const chunkIndex = Number(requestUrl.searchParams.get('index'));
-    const sessions = readSessions();
-    const session = sessions.find((item) => item.id === sessionId);
+    const latest = readUpload(uploadId) ?? upload;
+    latest.status = 'uploading';
+    latest.uploadedChunks = {
+      ...latest.uploadedChunks,
+      [chunkIndex]: { uploaded: true, timestamp: Date.now(), size: chunkSize }
+    };
+    writeUpload(latest);
 
-    if (!session) {
-      return HttpResponse.json({ message: '세션을 찾을 수 없습니다.' }, { status: 404 });
-    }
-
-    if (!session.completed.includes(chunkIndex)) {
-      session.completed.push(chunkIndex);
-      session.completed.sort((a, b) => a - b);
-      writeSessions(sessions);
-    }
-
-    return HttpResponse.json({ completed: session.completed });
+    return HttpResponse.json({
+      success: true,
+      uploadId,
+      chunkIndex: Number(chunkIndex),
+      uploadedChunks: latest.uploadedChunks
+    });
   }),
 
-  http.post('/api/chunk-upload/session/:sessionId/complete', ({ params }) => {
-    const sessionId = String(params.sessionId);
-    const sessions = readSessions();
-    const session = sessions.find((item) => item.id === sessionId);
+  http.get('/api/upload/status/:uploadId', ({ params }) => {
+    const upload = readUpload(String(params.uploadId));
+    return upload
+      ? HttpResponse.json(upload)
+      : HttpResponse.json({ message: '업로드 상태를 찾을 수 없습니다.' }, { status: 404 });
+  }),
 
-    if (!session) {
-      return HttpResponse.json({ message: '세션을 찾을 수 없습니다.' }, { status: 404 });
+  http.post('/api/upload/complete', async ({ request }) => {
+    const payload = (await request.json()) as { uploadId: string };
+    const upload = readUpload(payload.uploadId);
+
+    if (!upload) {
+      return HttpResponse.json({ message: '업로드 상태를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    if (session.completed.length !== session.totalChunks) {
+    const completedCount = Object.keys(upload.uploadedChunks).length;
+    if (completedCount !== upload.totalChunks) {
       return HttpResponse.json({ message: '아직 업로드되지 않은 청크가 있습니다.' }, { status: 409 });
     }
 
-    session.status = 'completed';
-    writeSessions(sessions);
-    return HttpResponse.json({ ok: true, completedAt: new Date().toISOString() });
+    upload.status = 'completed';
+    upload.completedAt = new Date().toISOString();
+    writeUpload(upload);
+
+    return HttpResponse.json({ success: true, uploadId: upload.uploadId, completedAt: upload.completedAt });
   })
 ];

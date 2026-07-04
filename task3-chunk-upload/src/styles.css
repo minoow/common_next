@@ -45,6 +45,17 @@ h1 { margin: 0; font-size: 32px; }
 .picker input { display: none; }
 .picker strong { font-size: 22px; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .picker span { color: #667085; }
+.quickCreate {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.quickCreate span {
+  color: #667085;
+  font-weight: 800;
+}
 .panel { margin-top: 16px; padding: 18px; }
 .progressHeader {
   display: flex;
@@ -89,6 +100,8 @@ h1 { margin: 0; font-size: 32px; }
   background: #d9e0ea;
 }
 .chunks span.done { background: #207a63; }
+.chunks span.active { background: #2f75b5; }
+.chunks span.failed { background: #b42318; }
 .log {
   display: grid;
   gap: 8px;

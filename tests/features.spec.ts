@@ -61,16 +61,18 @@ test.describe('과제 기능 플로우', () => {
     await page.locator('input[type="file"]').setInputFiles({
       name: 'large.bin',
       mimeType: 'application/octet-stream',
-      buffer: Buffer.alloc(1024 * 1024 + 128, 1)
+      buffer: Buffer.alloc(10 * 1024 * 1024 + 128, 1)
     });
 
     await expect(page.getByText('large.bin')).toBeVisible();
-    await expect(page.getByText('청크: 0/2')).toBeVisible();
+    await expect(page.getByText('청크: 0/3')).toBeVisible();
+    await expect(page.getByText('청크 크기: 5MB')).toBeVisible();
+    await expect(page.getByText('동시 업로드: 최대 3개')).toBeVisible();
 
     await page.getByRole('button', { name: '업로드 / 재개' }).click();
 
-    await expect(page.getByText('completed')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('completed')).toBeVisible({ timeout: 25_000 });
     await expect(page.getByText('100%')).toBeVisible();
-    await expect(page.getByText('청크: 2/2')).toBeVisible();
+    await expect(page.getByText('청크: 3/3')).toBeVisible();
   });
 });
