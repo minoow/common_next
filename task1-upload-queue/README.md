@@ -39,3 +39,11 @@
 make install
 make run1
 ```
+
+## 테스트
+
+루트에서 Playwright 기반 기능/API 테스트를 실행할 수 있습니다.
+
+```bash
+make test
+```

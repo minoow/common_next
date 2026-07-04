@@ -1,0 +1,16 @@
+{
+  "name": "42tape-frontend-developer",
+  "version": "1.0.0",
+  "description": "42Tape 프론트엔드 기술 과제 풀이입니다. 각 과제는 독립적인 Vite + React + TypeScript 프로젝트로 구성했습니다.",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "keywords": [],
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
+  }
+}

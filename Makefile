@@ -1,4 +1,5 @@
 install:
+	npm install
 	cd task1-upload-queue && npm install
 	cd task2-file-list && npm install
 	cd task3-chunk-upload && npm install
@@ -17,3 +18,5 @@ build:
 	cd task2-file-list && npm run build
 	cd task3-chunk-upload && npm run build
 
+test:
+	npm run test:e2e

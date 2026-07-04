@@ -16,6 +16,9 @@ make run2
 
 # 과제 3: 청크 기반 대용량 업로드
 make run3
+
+# Playwright 기능/API 테스트
+make test
 ```
 
 각 실행 명령은 Vite 개발 서버를 띄우며, 터미널에 표시되는 localhost URL로 접속하면 됩니다.
@@ -38,4 +41,5 @@ MSW handler에서는 지연, 실패, 세션 조회, 청크 업로드 응답을 �
 - TypeScript
 - Vite
 - MSW
+- Playwright
 - AI 코딩 도구: ChatGPT/Codex
