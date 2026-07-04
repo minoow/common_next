@@ -4,7 +4,7 @@ test.describe('과제 기능 플로우', () => {
   test('과제1: 파일을 큐에 추가하고 업로드 상태를 표시한다', async ({ page }) => {
     await page.goto('http://127.0.0.1:5173');
 
-    await page.locator('input[type="file"]').setInputFiles([
+    await page.getByTestId('file-input').setInputFiles([
       {
         name: 'first.txt',
         mimeType: 'text/plain',
@@ -19,7 +19,9 @@ test.describe('과제 기능 플로우', () => {
 
     await expect(page.getByText('first.txt')).toBeVisible();
     await expect(page.getByText('second.txt')).toBeVisible();
-    await expect(page.getByText(/업로드 중|완료|실패/).first()).toBeVisible();
+    await expect(page.getByText(/업로드 중|완료|실패|자동 재시도/).first()).toBeVisible();
+    await expect(page.getByText(/MB\/s|ETA/).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: '전체 취소' })).toBeVisible();
   });
 
   test('과제2: 5,000개 이상 목록을 렌더링하고 검색/스크롤이 동작한다', async ({ page }) => {
@@ -56,4 +58,3 @@ test.describe('과제 기능 플로우', () => {
     await expect(page.getByText('청크: 2/2')).toBeVisible();
   });
 });
-

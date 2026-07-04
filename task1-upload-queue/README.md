@@ -6,16 +6,34 @@
 
 ## 기술적 선택
 
-- React state와 `useEffect` 기반 큐 워커를 사용했습니다.
+- React `useReducer`와 `useEffect` 기반 큐 워커를 사용했습니다.
 - 실제 API 서버 대신 MSW handler로 mock API를 구현했습니다.
 - `AbortController`로 업로드 중 취소를 처리했습니다.
-- mock API에서 지연과 확률적 실패를 넣어 실패/재시도 플로우를 확인할 수 있게 했습니다.
+- mock API에서 MB 단위 랜덤 지연, 10% 네트워크 실패, pause/resume/cancel 상태 반영을 처리했습니다.
+- 실패 시 1초, 2초, 4초 exponential backoff로 최대 3회 자동 재시도합니다.
+
+## 구현 기능
+
+- 여러 파일 선택 및 드래그앤드롭 대기열 추가
+- `webkitdirectory` 기반 폴더 업로드
+- 상태 관리: `pending`, `uploading`, `paused`, `completed`, `failed`, `cancelled`
+- 한 번에 하나씩 순차 업로드
+- 진행률, 속도(MB/s), 예상 시간 표시
+- 개별 취소, 전체 취소, 개별 일시정지/재개
+- 실패 파일 수동 재시도
+
+## Mock API
+
+- `POST /api/upload`
+- `DELETE /api/upload/:id`
+- `POST /api/upload/:id/pause`
+- `POST /api/upload/:id/resume`
 
 ## 아키텍처
 
 - `src/main.tsx`: 앱 진입점
-- `src/App.tsx`: 업로드 큐 상태와 UI
-- `src/mockApi.ts`: `/api/uploads` 요청을 처리하는 MSW handler
+- `src/App.tsx`: 업로드 큐 reducer, 순차 업로드 워커, UI
+- `src/mockApi.ts`: `/api/upload` 계열 요청을 처리하는 MSW handler
 - `../shared/mock/browser.ts`: MSW worker 공통 시작 로직
 - `src/styles.css`: 과제 UI 스타일
 

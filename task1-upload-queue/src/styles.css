@@ -24,6 +24,12 @@ button {
   gap: 16px;
   align-items: center;
 }
+.headerActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 .eyebrow {
   margin: 0 0 4px;
   color: #3164c9;
@@ -44,9 +50,24 @@ h1 { margin: 0 0 24px; font-size: 32px; }
 .dropzone input { display: none; }
 .dropzone strong { font-size: 22px; }
 .dropzone span { color: #667085; }
+.folderButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  margin-top: 12px;
+  border: 1px solid #c8d2e3;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: #172033;
+  font-weight: 800;
+  cursor: pointer;
+}
+.folderButton input { display: none; }
 .stats {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   margin: 20px 0;
 }
@@ -61,7 +82,7 @@ h1 { margin: 0 0 24px; font-size: 32px; }
 .queue { display: grid; gap: 10px; }
 .row {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(160px, 320px) auto;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 360px) auto;
   gap: 16px;
   align-items: center;
   padding: 14px;
@@ -70,6 +91,12 @@ h1 { margin: 0 0 24px; font-size: 32px; }
 .file strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file span { color: #667085; font-size: 13px; }
 .file em { color: #bd3d2a; font-style: normal; font-size: 13px; }
+.uploadMetrics {
+  display: grid;
+  gap: 6px;
+  color: #667085;
+  font-size: 13px;
+}
 .progress {
   height: 10px;
   border-radius: 999px;
@@ -82,7 +109,12 @@ h1 { margin: 0 0 24px; font-size: 32px; }
   background: #2f75b5;
   transition: width 180ms ease;
 }
-.actions { display: flex; justify-content: flex-end; }
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .empty {
   color: #667085;
   text-align: center;
@@ -91,4 +123,6 @@ h1 { margin: 0 0 24px; font-size: 32px; }
 @media (max-width: 760px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
   .row { grid-template-columns: 1fr; }
+  .header { align-items: stretch; flex-direction: column; }
+  .headerActions { justify-content: stretch; }
 }

@@ -13,7 +13,9 @@ test.describe('MSW mock API', () => {
     await gotoWithActiveMsw(page, 'http://127.0.0.1:5173');
 
     const result = await page.evaluate(async () => {
-      const response = await fetch('/api/uploads', { method: 'POST' });
+      const formData = new FormData();
+      formData.append('file', new File([new ArrayBuffer(1024)], 'api-test.bin'));
+      const response = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await response.json();
       return { ok: response.ok, status: response.status, data };
     });
@@ -21,7 +23,13 @@ test.describe('MSW mock API', () => {
     expect([200, 503]).toContain(result.status);
     expect(result.data).toEqual(
       result.ok
-        ? expect.objectContaining({ id: expect.any(String), uploadedAt: expect.any(String) })
+        ? expect.objectContaining({
+            id: expect.any(String),
+            fileName: 'api-test.bin',
+            fileSize: 1024,
+            progress: 100,
+            status: 'completed'
+          })
         : expect.objectContaining({ message: expect.any(String) })
     );
   });
