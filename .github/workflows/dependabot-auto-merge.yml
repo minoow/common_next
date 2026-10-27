@@ -4,8 +4,6 @@ name: Dependabot Auto Merge
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]
-  issue_comment:
-    types: [created]
 
 permissions:
   contents: write
@@ -13,18 +11,17 @@ permissions:
 
 jobs:
   auto-merge:
-    if: |
-      github.event_name == 'pull_request_target' &&
-      github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch metadata
+      - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge patch updates
-        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+      - name: Merge Dependabot PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
